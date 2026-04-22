@@ -180,6 +180,7 @@
     <header class="topbar">
       <button class="hamburger" id="btn-hamburger">&#x2630;</button>
       <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-live"><span class="tl-dot"></span>LIVE</div>
       <div class="topbar-actions">
         <select class="topbar-room-select" id="filter-room-global" onchange="applyGlobalFilters()">
           <option value="">Todas as linhas</option>
@@ -200,6 +201,7 @@
       <section id="sec-dashboard" class="section active">
 
         <!-- ── ROW 1: KPIs básicos ─────────────────────────── -->
+        <div class="dash-row-label">Visão Geral</div>
         <div class="stats-grid">
           <div class="stat-card blue">
             <div class="stat-card-header">
@@ -236,6 +238,7 @@
         </div>
 
         <!-- ── ROW 2: KPIs estratégicos ────────────────────── -->
+        <div class="dash-row-label">Indicadores Estratégicos</div>
         <div class="stats-grid stats-grid-5">
           <div class="stat-card stat-card-teal">
             <div class="stat-card-header">
@@ -271,6 +274,7 @@
         </div>
 
         <!-- ── ROW 3: Gráficos principais ──────────────────── -->
+        <div class="dash-row-label" style="margin-top:4px">Análise de Performance</div>
         <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;margin-bottom:20px;align-items:start">
           <!-- Linha vs Limite -->
           <div class="chart-card" style="margin:0">
@@ -336,10 +340,16 @@
 
 
         <!-- ── ROW 4b: Sessões Ativas Agora ────────────────── -->
-        <div class="card" style="margin-bottom:16px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <div class="card-title" style="margin:0">⚡ Changeovers em Andamento</div>
-            <span style="font-size:11px;color:var(--muted)">Atualiza automaticamente</span>
+        <div class="dash-row-label" style="margin-top:4px">Monitoramento em Tempo Real</div>
+        <div class="card" style="margin-bottom:16px;border-color:rgba(0,212,255,0.12)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="section-title-bar" style="margin:0">Changeovers em Andamento</div>
+            </div>
+            <span style="font-size:11px;color:var(--success);display:flex;align-items:center;gap:5px;font-weight:600">
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--success);animation:pulse 2s infinite;display:inline-block"></span>
+              Ao vivo
+            </span>
           </div>
           <div id="active-sessions-panel" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
             <div style="color:var(--muted);font-size:12px;padding:12px">Carregando...</div>
@@ -652,6 +662,28 @@
 
     </main>
   </div>
+
+  <!-- ── MOBILE BOTTOM NAVIGATION ── -->
+  <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+    <div class="mobile-bottom-nav-inner">
+      <button class="mbn-item active" data-sec="dashboard" onclick="navTo('dashboard');mbnSetActive('dashboard')">
+        <span class="mbn-icon">&#x1F4CA;</span>Dashboard
+      </button>
+      <button class="mbn-item" data-sec="records" onclick="navTo('records');mbnSetActive('records')">
+        <span class="mbn-icon">&#x1F4CB;</span>Registros
+      </button>
+      <button class="mbn-item" data-sec="alerts" onclick="navTo('alerts');mbnSetActive('alerts')">
+        <span class="mbn-icon">&#x1F6A8;</span>Alertas
+        <span class="mbn-badge" id="mbn-alerts-badge" style="display:none">0</span>
+      </button>
+      <button class="mbn-item" data-sec="matriz" onclick="navTo('matriz');mbnSetActive('matriz')">
+        <span class="mbn-icon">&#x1F4CB;</span>Matriz
+      </button>
+      <button class="mbn-item" data-sec="menu" onclick="toggleSidebar()">
+        <span class="mbn-icon">&#x2630;</span>Menu
+      </button>
+    </div>
+  </nav>
 </div>
 
 <!-- VIEW: OPERADOR -->

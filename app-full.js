@@ -332,6 +332,9 @@ function navTo(sec) {
     el.classList.toggle('active', el.dataset.sec === sec));
   document.querySelectorAll('.section').forEach(el =>
     el.classList.toggle('active', el.id === 'sec-' + sec));
+  // Sincroniza mobile bottom nav
+  document.querySelectorAll('.mbn-item').forEach(el =>
+    el.classList.toggle('active', el.dataset.sec === sec));
 
   const titles = { dashboard:'Dashboard', rooms:'Linhas SMT', records:'Registros',
                    alerts:'Alertas', compare:'Comparação de Modelos', matriz:'Matriz CO',
@@ -408,9 +411,11 @@ async function loadAdminStats() {
       conformEl.style.color = conformPct >= 80 ? '#22c55e' : conformPct >= 60 ? '#fb923c' : '#ef4444';
     }
 
-    // Alerts badge
+    // Alerts badge (sidebar + mobile nav)
     const nb = document.getElementById('nav-alerts-badge');
     if (nb) { nb.textContent = alertSess.length || ''; nb.style.display = alertSess.length ? '' : 'none'; }
+    const mbnb = document.getElementById('mbn-alerts-badge');
+    if (mbnb) { mbnb.textContent = alertSess.length || ''; mbnb.style.display = alertSess.length ? '' : 'none'; }
 
     // Lead Time
     calcLeadTime(_allSessions);
@@ -1279,29 +1284,47 @@ function renderActiveSessions(activeSessions) {
   const el = document.getElementById('active-sessions-panel');
   if (!el) return;
   if (!activeSessions.length) {
-    el.innerHTML = `<div style="color:var(--muted);font-size:12px;text-align:center;padding:12px">Nenhum changeover em andamento.</div>`;
+    el.innerHTML = `<div style="color:var(--muted);font-size:13px;text-align:center;padding:32px 16px;width:100%">
+      <div style="font-size:32px;margin-bottom:8px;opacity:0.3">⚡</div>
+      Nenhum changeover em andamento agora.
+    </div>`;
     return;
   }
   el.innerHTML = activeSessions.map(s => {
-    const elapsed = s.start_time ? Date.now() - new Date(s.start_time).getTime() : 0;
+    const startMs = s.start_time ? new Date(s.start_time).getTime() : Date.now();
+    const elapsed = Date.now() - startMs;
     const limMs   = (s.rooms?.alert_limit_minutes||300)*60000;
     const over    = elapsed > limMs;
-    const color   = over ? '#ef4444' : '#22c55e';
-    const border  = over ? 'rgba(239,68,68,0.4)' : 'rgba(34,197,94,0.3)';
+    const pct     = Math.min(Math.round(elapsed / limMs * 100), 100);
+    const overClass = over ? 'over-limit' : '';
     return `
-      <div style="background:rgba(0,212,255,0.05);border:1px solid ${border};border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-        <div>
-          <div style="font-family:monospace;font-size:16px;font-weight:900;color:var(--accent);letter-spacing:2px">${s.rooms?.room_code||'—'}</div>
-          <div style="font-size:12px;color:#d0dff0;font-weight:600">${s.rooms?.name||'—'}</div>
-          <div style="font-size:11px;color:#a8b8d0;margin-top:2px">👤 ${s.tech_name||'—'} · ${s.shift||'—'}</div>
+      <div class="session-live-card ${overClass}">
+        <span class="slc-badge-active">${over ? '⚠ ALERTA' : '● ATIVO'}</span>
+        <div class="slc-line-code">${s.rooms?.room_code||'—'}</div>
+        <div class="slc-tech">👤 ${s.tech_name||'—'}</div>
+        <div class="slc-meta">
+          🏭 ${s.rooms?.name||'—'} &nbsp;·&nbsp; 🕐 ${s.shift||'—'} &nbsp;·&nbsp; 📦 ${s.product||'—'}
         </div>
-        <div style="text-align:right">
-          <div style="font-family:monospace;font-size:14px;font-weight:700;color:${color}">${fmtHHMMSS(elapsed)}</div>
-          <div style="font-size:10px;color:#a8b8d0">Limite ${fmtHHMMSS(limMs)}</div>
-          <span style="font-size:10px;background:rgba(34,197,94,0.15);color:#22c55e;padding:2px 8px;border-radius:12px;font-weight:700">● ATIVO</span>
-        </div>
+        <div class="slc-timer" data-start="${startMs}">${fmtHHMMSS(elapsed)}</div>
+        <div class="slc-limit">Limite: ${fmtHHMMSS(limMs)} &nbsp;|&nbsp; ${pct}% utilizado</div>
+        <div class="slc-progress"><div class="slc-progress-bar" style="width:${pct}%"></div></div>
       </div>`;
   }).join('');
+
+  // Live timers nos cards de sessão ativa
+  clearInterval(window._sessionTimerInterval);
+  window._sessionTimerInterval = setInterval(() => {
+    document.querySelectorAll('.slc-timer[data-start]').forEach(el => {
+      const start = parseInt(el.dataset.start, 10);
+      if (!start) return;
+      el.textContent = fmtHHMMSS(Date.now() - start);
+    });
+  }, 1000);
+}
+
+function mbnSetActive(sec) {
+  document.querySelectorAll('.mbn-item').forEach(el =>
+    el.classList.toggle('active', el.dataset.sec === sec));
 }
 
 /* ============================================================

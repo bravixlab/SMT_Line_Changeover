@@ -1126,4 +1126,225 @@ textarea.field-input { resize:vertical; min-height:88px; line-height:1.5; }
   #globe-canvas{width:94vmin !important;height:94vmin !important;}
 }
 
-  
+/* ============================================================
+   PREMIUM UPGRADE v5 — Dashboard Visual & Mobile
+   ============================================================ */
+
+/* ── Scrollbar premium ── */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(0,212,255,0.18); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:rgba(0,212,255,0.35); }
+
+/* ── Stat cards — vertical accent bar (substitui barra horizontal) ── */
+.stat-card::before {
+  top: 18px !important; left: 0 !important; right: auto !important;
+  bottom: 18px !important; width: 3px !important;
+  height: auto !important; border-radius: 0 3px 3px 0 !important;
+}
+.stat-card.blue::before   { background: var(--accent) !important;  box-shadow: 0 0 10px rgba(0,212,255,0.55) !important; }
+.stat-card.green::before  { background: var(--success) !important; box-shadow: 0 0 10px rgba(0,200,150,0.55) !important; }
+.stat-card.orange::before { background: var(--accent2) !important; box-shadow: 0 0 10px rgba(255,107,53,0.55) !important; }
+.stat-card.red::before    { background: var(--danger) !important;  box-shadow: 0 0 10px rgba(255,63,94,0.55) !important;  }
+
+/* Bordas coloridas sutis + glow no hover */
+.stat-card.blue   { border-color: rgba(0,212,255,0.14) !important;  }
+.stat-card.green  { border-color: rgba(0,200,150,0.14) !important;  }
+.stat-card.orange { border-color: rgba(255,107,53,0.14) !important; }
+.stat-card.red    { border-color: rgba(255,63,94,0.14) !important;  }
+.stat-card.blue:hover   { box-shadow:0 16px 48px rgba(0,212,255,0.13),0 4px 16px rgba(0,0,0,0.3) !important;  border-color:rgba(0,212,255,0.3) !important; }
+.stat-card.green:hover  { box-shadow:0 16px 48px rgba(0,200,150,0.13),0 4px 16px rgba(0,0,0,0.3) !important;  border-color:rgba(0,200,150,0.3) !important; }
+.stat-card.orange:hover { box-shadow:0 16px 48px rgba(255,107,53,0.13),0 4px 16px rgba(0,0,0,0.3) !important; border-color:rgba(255,107,53,0.3) !important;}
+.stat-card.red:hover    { box-shadow:0 16px 48px rgba(255,63,94,0.13),0 4px 16px rgba(0,0,0,0.3) !important;   border-color:rgba(255,63,94,0.3) !important;  }
+
+/* Fundo levemente diferenciado por cor */
+.stat-card.blue   { background: linear-gradient(135deg,rgba(0,212,255,0.04),rgba(11,17,32,0.98)) !important; }
+.stat-card.green  { background: linear-gradient(135deg,rgba(0,200,150,0.04),rgba(11,17,32,0.98)) !important; }
+.stat-card.orange { background: linear-gradient(135deg,rgba(255,107,53,0.04),rgba(11,17,32,0.98)) !important; }
+.stat-card.red    { background: linear-gradient(135deg,rgba(255,63,94,0.04),rgba(11,17,32,0.98)) !important; }
+
+/* Shimmer overlay no canto superior direito */
+.stat-card { isolation:isolate; }
+.stat-card::after {
+  content:''; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+  background: radial-gradient(ellipse at 88% 12%, rgba(255,255,255,0.035) 0%, transparent 55%);
+  z-index:0;
+}
+.stat-card-header, .stat-val, .stat-sub, .stat-label { position:relative; z-index:1; }
+
+/* Valor maior no desktop */
+@media (min-width:769px) {
+  .stat-val { font-size:36px !important; letter-spacing:-0.5px; }
+}
+
+/* ── Topbar — linha de brilho na base ── */
+.topbar { position:relative !important; }
+.topbar::after {
+  content:''; position:absolute; bottom:0; left:10%; right:10%; height:1px; pointer-events:none;
+  background: linear-gradient(90deg,transparent,rgba(0,212,255,0.22),transparent);
+}
+
+/* ── Sidebar — borda direita com glow ── */
+.sidebar { overflow:visible !important; }
+.sidebar::after {
+  content:''; position:absolute; top:0; right:-1px; width:1px; height:100%; pointer-events:none;
+  background: linear-gradient(180deg,rgba(0,212,255,0.18),transparent 50%,rgba(0,212,255,0.06));
+}
+
+/* ── Chart cards — bordas premium + hover glow ── */
+.chart-card {
+  border-radius:18px !important;
+  transition:box-shadow 0.28s ease, border-color 0.28s ease !important;
+  background:var(--surface) !important;
+}
+.chart-card:hover {
+  box-shadow:0 0 0 1px rgba(0,212,255,0.1),0 12px 40px rgba(0,0,0,0.28) !important;
+  border-color:rgba(0,212,255,0.14) !important;
+}
+
+/* ── Label de seção do dashboard ── */
+.dash-row-label {
+  font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  color:var(--muted); margin-bottom:12px; display:flex; align-items:center; gap:10px;
+}
+.dash-row-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.055); }
+
+/* ── Live badge na topbar ── */
+.topbar-live {
+  display:flex; align-items:center; gap:6px;
+  font-size:11px; font-weight:700; color:var(--success); letter-spacing:0.5px;
+  background:rgba(0,200,150,0.08); border:1px solid rgba(0,200,150,0.2);
+  border-radius:20px; padding:4px 10px; white-space:nowrap; flex-shrink:0;
+}
+.topbar-live .tl-dot {
+  width:6px; height:6px; border-radius:50%; background:var(--success);
+  animation:pulse 2s infinite; flex-shrink:0;
+}
+@media (max-width:480px) { .topbar-live { display:none !important; } }
+
+/* ── Cards de sessão ativa — premium ── */
+.session-live-card {
+  background:linear-gradient(135deg,rgba(0,212,255,0.04) 0%,rgba(11,17,32,0.99) 100%);
+  border:1px solid rgba(0,212,255,0.16);
+  border-radius:16px; padding:18px 20px;
+  position:relative; overflow:hidden;
+  transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+}
+.session-live-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,212,255,0.4),transparent);
+}
+.session-live-card.over-limit {
+  border-color:rgba(239,68,68,0.28) !important;
+  background:linear-gradient(135deg,rgba(239,68,68,0.04) 0%,rgba(11,17,32,0.99) 100%) !important;
+}
+.session-live-card.over-limit::before {
+  background:linear-gradient(90deg,transparent,rgba(239,68,68,0.4),transparent) !important;
+}
+.session-live-card:hover { box-shadow:0 10px 36px rgba(0,212,255,0.1); transform:translateY(-3px); }
+.session-live-card.over-limit:hover { box-shadow:0 10px 36px rgba(239,68,68,0.1); }
+
+.slc-line-code {
+  font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--accent);
+  letter-spacing:3px; background:rgba(0,212,255,0.08); border:1px solid rgba(0,212,255,0.2);
+  border-radius:8px; padding:3px 10px; display:inline-block; margin-bottom:8px;
+}
+.session-live-card.over-limit .slc-line-code { color:#ef4444; background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.2); }
+
+.slc-tech { font-size:14px; font-weight:700; color:var(--text); margin-bottom:2px; }
+.slc-meta { font-size:11px; color:var(--muted2); margin-bottom:12px; }
+.slc-timer {
+  font-family:var(--font-mono); font-size:26px; font-weight:700; color:var(--accent);
+  letter-spacing:1px; text-shadow:0 0 20px rgba(0,212,255,0.3); line-height:1;
+}
+.session-live-card.over-limit .slc-timer { color:#ef4444; text-shadow:0 0 20px rgba(239,68,68,0.3); }
+.slc-limit { font-size:10px; color:var(--muted); margin-top:3px; }
+
+.slc-progress { height:3px; background:rgba(255,255,255,0.07); border-radius:2px; margin-top:12px; overflow:hidden; }
+.slc-progress-bar {
+  height:100%; border-radius:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  box-shadow:0 0 8px rgba(0,212,255,0.4);
+  transition:width 1.5s ease;
+}
+.session-live-card.over-limit .slc-progress-bar {
+  background:linear-gradient(90deg,#ff6b35,#ef4444) !important;
+  box-shadow:0 0 8px rgba(239,68,68,0.4) !important;
+}
+
+.slc-badge-active {
+  position:absolute; top:14px; right:14px;
+  font-size:9px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase;
+  padding:3px 8px; border-radius:10px;
+  background:rgba(0,212,255,0.12); color:var(--accent); border:1px solid rgba(0,212,255,0.25);
+  animation:pulse 2.5s infinite;
+}
+.session-live-card.over-limit .slc-badge-active {
+  background:rgba(239,68,68,0.12) !important; color:#ef4444 !important;
+  border-color:rgba(239,68,68,0.3) !important;
+}
+
+/* ── Mobile Bottom Navigation ── */
+.mobile-bottom-nav {
+  display:none;
+  position:fixed; bottom:0; left:0; right:0; z-index:300;
+  background:rgba(5,8,16,0.97);
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  border-top:1px solid rgba(255,255,255,0.08);
+  padding-bottom:env(safe-area-inset-bottom,4px);
+  box-shadow:0 -8px 32px rgba(0,0,0,0.5);
+}
+.mobile-bottom-nav-inner {
+  display:grid; grid-template-columns:repeat(5,1fr); padding:6px 0;
+}
+.mbn-item {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:6px 2px; cursor:pointer; transition:color 0.17s, transform 0.17s;
+  color:rgba(107,132,168,0.85); background:none; border:none;
+  font-size:9px; font-family:var(--font-body); font-weight:700;
+  letter-spacing:0.4px; text-transform:uppercase; position:relative;
+}
+.mbn-item .mbn-icon { font-size:20px; line-height:1.2; transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1); }
+.mbn-item.active { color:var(--accent); }
+.mbn-item.active .mbn-icon { transform:translateY(-2px); filter:drop-shadow(0 0 6px rgba(0,212,255,0.55)); }
+.mbn-item.active::after {
+  content:''; position:absolute; top:0; left:20%; right:20%; height:2px; border-radius:0 0 3px 3px;
+  background:var(--accent); box-shadow:0 0 8px rgba(0,212,255,0.7);
+}
+.mbn-badge {
+  position:absolute; top:2px; right:calc(50% - 20px);
+  background:var(--danger); color:#fff; font-size:9px; font-weight:700;
+  padding:1px 5px; border-radius:8px; min-width:16px; text-align:center;
+  line-height:1.4; animation:pulse 2s infinite;
+}
+
+@media (max-width:768px) {
+  .mobile-bottom-nav { display:block !important; }
+  .page-content { padding-bottom:76px !important; }
+  /* Hide recent sessions table no mobile (muito larga) */
+  #sec-dashboard > .card:last-of-type { display:none; }
+}
+@media (max-width:420px) {
+  .mbn-item { font-size:8px; padding:5px 1px; }
+  .mbn-item .mbn-icon { font-size:18px; }
+}
+
+/* ── Card da seção "Changeovers em Andamento" header ── */
+#active-sessions-panel { gap:12px !important; }
+
+/* ── Recent sessions table premium ── */
+.data-table tbody tr { transition:background 0.15s; }
+.data-table tbody tr:hover td { background:rgba(0,212,255,0.028) !important; }
+
+/* ── Section titles com barra colorida ── */
+.section-title-bar {
+  display:flex; align-items:center; gap:10px;
+  font-family:var(--font-display); font-size:15px; font-weight:700;
+  letter-spacing:0.6px; text-transform:uppercase; color:var(--muted2); margin-bottom:16px;
+}
+.section-title-bar::before {
+  content:''; width:3px; height:18px; border-radius:2px; flex-shrink:0;
+  background:linear-gradient(180deg,var(--accent),var(--accent2));
+  box-shadow:0 0 8px rgba(0,212,255,0.45);
+}
