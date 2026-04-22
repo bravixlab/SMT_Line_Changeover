@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Changeover SMT</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Bibliotecas via CDN (requer internet) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+<div class="stars"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<div id="toast-container"></div>
+
+<!-- VIEW: SPLASH -->
+<div id="view-splash" class="view active">
+
+  <!-- ── VÍDEO BACKGROUND — embutido em base64, roda em loop, sem som ── -->
+  <video id="splash-video" autoplay muted loop playsinline
+    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none;">
+    <source src="bg.mp4" type="video/mp4">
+  </video>
+
+  <!-- ── OVERLAY ESCURO SUAVE (mantém legibilidade dos textos) ── -->
+  <div style="position:absolute;inset:0;z-index:1;
+    background:rgba(6,10,22,0.52);
+    pointer-events:none;">
+  </div>
+
+  <!-- ── CONTEÚDO NA FRENTE DO VÍDEO ── -->
+  <div class="splash-content fade-up" style="position:relative;z-index:10;">
+    <h1 class="splash-title">
+      <span class="word-change">Changeover</span>&nbsp;<span class="word-smt">SMT</span>
+    </h1>
+    <p class="splash-subtitle">
+      <span class="live-dot"></span>
+      Sistema de Controle em Tempo Real
+    </p>
+    <div class="splash-btns">
+      <button class="btn btn-primary btn-lg btn-full" onclick="goToOperatorLogin()">&#x1F527; Sou Operador &mdash; Iniciar Changeover</button>
+      <button class="btn btn-secondary btn-lg btn-full" onclick="goToAdminLogin()">&#x1F451; Lideran&ccedil;a &mdash; Acessar Painel</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW: LOGIN ADMIN -->
+<div id="view-login-admin" class="view">
+  <div class="login-wrap fade-up" style="margin:auto;padding:20px">
+    <div class="login-brand">
+      <div class="brand-icon">&#x1F451;</div>
+      <div class="brand-title">Painel de Lideran&ccedil;a</div>
+      <div class="brand-sub">Changeover SMT v3.0 &middot; Industrial</div>
+    </div>
+    <div class="login-box">
+      <div class="box-title">&#x1F512; Acesso Restrito</div>
+      <div class="field">
+        <label class="field-label">Usu&aacute;rio</label>
+        <input id="adm-user" class="field-input" type="text" value="Lideran&ccedil;a" autocomplete="username">
+      </div>
+      <div class="field">
+        <label class="field-label">Senha</label>
+        <input id="adm-pass" class="field-input" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password">
+      </div>
+      <button class="btn btn-secondary btn-full btn-lg" onclick="loginAdmin()" style="margin-top:8px">
+        &#x1F451; Acessar Painel de Lideran&ccedil;a
+      </button>
+    </div>
+    <div class="back-link" onclick="showView('splash')">&#x2190; Voltar ao in&iacute;cio</div>
+  </div>
+</div>
+
+<!-- VIEW: LOGIN OPERADOR -->
+<div id="view-login-op" class="view">
+  <div class="login-wrap fade-up" style="margin:auto;padding:20px">
+    <div class="login-brand">
+      <div class="brand-icon" style="background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(0,212,255,0.3));border-color:rgba(0,212,255,0.3)">&#x1F527;</div>
+      <div class="brand-title">Acesso do Operador</div>
+      <div class="brand-sub">Informe o ID enviado pela lideran&ccedil;a</div>
+    </div>
+    <div class="login-box">
+      <div class="box-title" style="color:var(--accent)">&#x1F3ED; ID da Linha</div>
+      <div class="field">
+        <label class="field-label">C&oacute;digo de Acesso</label>
+        <input id="op-room-input" class="field-input id-style" type="text" placeholder="XXXX" maxlength="6" autocomplete="off" spellcheck="false">
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;text-align:center">
+          &#x2139;&#xFE0F; Informe o ID enviado pela lideran&ccedil;a
+        </div>
+      </div>
+      <div class="field" style="margin-top:12px">
+        <label class="field-label">&#x1F194; Matr&iacute;cula do Operador *</label>
+        <input id="op-matricula-input" class="field-input" type="text" placeholder="000000" maxlength="6"
+          pattern="[0-9]{6}" inputmode="numeric"
+          style="text-align:center;letter-spacing:4px;font-family:monospace;font-size:22px;font-weight:700"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)">
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;text-align:center">
+          &#x1F512; Use a mesma matr&iacute;cula em qualquer dispositivo para retomar
+        </div>
+      </div>
+      <button id="btn-op-enter" class="btn btn-primary btn-full btn-lg" onclick="loginOperator()" style="margin-top:12px">
+        &#x25B6; Entrar no Changeover
+      </button>
+    </div>
+    <div class="back-link" onclick="showView('splash')">&#x2190; Voltar ao in&iacute;cio</div>
+  </div>
+</div>
+
+<!-- VIEW: ADMIN -->
+<div id="view-admin" class="view" style="flex-direction:row">
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" id="sidebar-brand">
+      <!-- MODO ABERTO: logo + botão toggle no canto -->
+      <div id="brand-full" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div>
+          <div class="sidebar-logo"><span>&#x2699;&#xFE0F;</span> Changeover SMT</div>
+          <div class="sidebar-tagline">Painel de Lideran&ccedil;a</div>
+        </div>
+        <button onclick="toggleSidebar()" title="Minimizar menu"
+          style="width:32px;height:32px;border-radius:6px;flex-shrink:0;
+            background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);
+            color:var(--accent);font-size:18px;cursor:pointer;
+            display:flex;align-items:center;justify-content:center;">&#x2630;</button>
+      </div>
+      <!-- MODO MINI: só o botão ☰ centralizado -->
+      <div id="brand-mini" style="display:none;justify-content:center;align-items:center;width:100%">
+        <button onclick="toggleSidebar()" title="Expandir menu"
+          style="width:40px;height:40px;border-radius:8px;
+            background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.3);
+            color:var(--accent);font-size:20px;cursor:pointer;
+            display:flex;align-items:center;justify-content:center;">&#x2630;</button>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <button class="nav-item active" data-sec="dashboard" onclick="navTo('dashboard')" title="Dashboard">
+        <span class="nav-icon">&#x1F4CA;</span><span class="nav-item-text"> Dashboard</span>
+      </button>
+      <button class="nav-item" data-sec="rooms" onclick="navTo('rooms')" title="Linhas SMT">
+        <span class="nav-icon">&#x1F6AA;</span><span class="nav-item-text"> Linhas SMT</span>
+      </button>
+      <div class="nav-section-label">Dados</div>
+      <button class="nav-item" data-sec="records" onclick="navTo('records')" title="Registros">
+        <span class="nav-icon">&#x1F4CB;</span><span class="nav-item-text"> Registros</span>
+      </button>
+      <button class="nav-item" data-sec="alerts" onclick="navTo('alerts')" title="Alertas">
+        <span class="nav-icon">&#x1F6A8;</span><span class="nav-item-text"> Alertas</span>
+        <span class="nav-badge" id="nav-alerts-badge" style="display:none">0</span>
+      </button>
+      <div class="nav-section-label">Análise</div>
+      <button class="nav-item" data-sec="compare" onclick="navTo('compare')" title="Comparação">
+        <span class="nav-icon">📊</span><span class="nav-item-text"> Comparação</span>
+      </button>
+      <button class="nav-item" data-sec="matriz" onclick="navTo('matriz')" title="Matriz CO">
+        <span class="nav-icon">📋</span><span class="nav-item-text"> Matriz CO</span>
+      </button>
+      <div class="nav-section-label">Sistema</div>
+
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">L</div>
+        <div>
+          <div class="user-name">Lideran&ccedil;a</div>
+          <div class="user-role">Supervisor</div>
+        </div>
+      </div>
+      <button class="sidebar-logout" onclick="adminLogout()" title="Sair">
+        <span style="font-size:16px">&#x21A9;</span>
+        <span class="nav-item-text"> Sair</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <header class="topbar">
+      <button class="hamburger" id="btn-hamburger">&#x2630;</button>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-actions">
+        <select class="topbar-room-select" id="filter-room-global" onchange="applyGlobalFilters()">
+          <option value="">Todas as linhas</option>
+        </select>
+        <select class="topbar-room-select" id="filter-model-global" onchange="applyGlobalFilters()">
+          <option value="">Todos os modelos</option>
+        </select>
+        <button class="btn-topbar-excel" onclick="exportExcel()" title="Exportar Excel">
+          <span>&#x1F4E5;</span><span class="btn-label"> Excel</span>
+        </button>
+        <button class="btn-topbar-new" onclick="openCreateRoom()" title="Nova Linha">
+          <span>+</span><span class="btn-label"> Nova Linha</span>
+        </button>
+      </div>
+    </header>
+    <main class="page-content" style="padding-top:24px">
+
+      <section id="sec-dashboard" class="section active">
+
+        <!-- ── ROW 1: KPIs básicos ─────────────────────────── -->
+        <div class="stats-grid">
+          <div class="stat-card blue">
+            <div class="stat-card-header">
+              <div class="stat-label">Changeovers Hoje</div>
+              <div class="stat-icon-circle blue-circle">&#x1F4C8;</div>
+            </div>
+            <div class="stat-val" id="stat-today">-</div>
+            <div class="stat-sub">Total do dia</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-card-header">
+              <div class="stat-label">Em Andamento</div>
+              <div class="stat-icon-circle purple-circle">&#x1F4BB;</div>
+            </div>
+            <div class="stat-val" id="stat-active">-</div>
+            <div class="stat-sub">Ativas agora</div>
+          </div>
+          <div class="stat-card orange">
+            <div class="stat-card-header">
+              <div class="stat-label">M&eacute;dia de Tempo</div>
+              <div class="stat-icon-circle green-circle">&#x23F1;</div>
+            </div>
+            <div class="stat-val" id="stat-avg">-</div>
+            <div class="stat-sub">Vs limite 5h</div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-card-header">
+              <div class="stat-label">Alertas Cr&iacute;ticos</div>
+              <div class="stat-icon-circle red-circle">&#x26A0;</div>
+            </div>
+            <div class="stat-val" id="stat-alerts">-</div>
+            <div class="stat-sub">Acima do limite</div>
+          </div>
+        </div>
+
+        <!-- ── ROW 2: KPIs estratégicos ────────────────────── -->
+        <div class="stats-grid stats-grid-5">
+          <div class="stat-card stat-card-teal">
+            <div class="stat-card-header">
+              <div class="stat-label"><span class="stat-dot dot-teal"></span> Tempo Total (Atividades)</div>
+            </div>
+            <div class="stat-val" id="stat-total-accum" style="color:#00e5b0">-</div>
+            <div class="stat-sub">Soma de todas as machine_times conclu&iacute;das</div>
+          </div>
+          <div class="stat-card stat-card-emerald">
+            <div class="stat-card-header">
+              <div class="stat-label"><span class="stat-dot dot-emerald"></span> Conformidade</div>
+            </div>
+            <div class="stat-val" id="stat-conform" style="color:#22c55e">-</div>
+            <div class="stat-sub" id="conform-sub">Sess&otilde;es dentro do limite de 5h</div>
+          </div>
+          <div class="stat-card stat-card-orange" id="kpi-gargalo-card">
+            <div class="stat-card-header">
+              <div class="stat-label"><span class="stat-dot dot-orange"></span> Gargalo Atual</div>
+            </div>
+            <div class="stat-val" id="stat-gargalo-name" style="font-size:18px;color:#fb923c;line-height:1.3">-</div>
+            <div class="stat-sub" id="stat-gargalo-pct" style="color:#fdc080">% do tempo total</div>
+          </div>
+          <div class="stat-card stat-card-purple" id="kpi-leadtime-card">
+            <div class="stat-card-header">
+              <div class="stat-label"><span class="stat-dot dot-purple"></span> Lead Time M&eacute;dio</div>
+            </div>
+            <div class="stat-val" id="stat-leadtime" style="color:#c084fc">-</div>
+            <div class="stat-sub" id="stat-leadtime-sub">Baseado em CO conclu&iacute;dos</div>
+            <div style="margin-top:8px">
+              <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:3px 10px;color:#c084fc;border-color:rgba(168,85,247,0.3)" onclick="openLeadTimeDetail()">Detalhes</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ROW 3: Gráficos principais ──────────────────── -->
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;margin-bottom:20px;align-items:start">
+          <!-- Linha vs Limite -->
+          <div class="chart-card" style="margin:0">
+            <div class="chart-header" style="flex-direction:column;align-items:flex-start;gap:4px;padding-bottom:8px">
+              <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+                <div class="chart-title" style="font-size:13px;font-weight:800;color:#ffffff;letter-spacing:0.5px">📊 Tempo Médio por Linha vs Limite</div>
+                <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:4px 8px" onclick="loadAdminStats()">&#x21BB;</button>
+              </div>
+              <div style="display:flex;gap:14px;align-items:center;font-size:11px">
+                <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:14px;height:10px;background:rgba(0,212,255,0.5);border:2px solid rgba(0,212,255,1);border-radius:2px"></span><span style="color:#a8c8f0">Média real</span></span>
+                <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:18px;height:2px;background:rgba(255,80,80,0.8);border-top:2px dashed rgba(255,80,80,1)"></span><span style="color:#f0a0a0">Limite</span></span>
+              </div>
+            </div>
+            <div style="height:260px"><canvas id="chart-main"></canvas></div>
+          </div>
+          <!-- Atividade SMT (expandido, sem target line) -->
+          <div class="chart-card" style="margin:0">
+            <div class="chart-header" style="flex-direction:column;align-items:flex-start;gap:4px;padding-bottom:8px">
+              <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+                <div class="chart-title" style="font-size:13px;font-weight:800;color:#ffffff;letter-spacing:0.5px">⏱ Tempo Médio por Atividade SMT</div>
+                <span style="font-size:10px;background:rgba(255,80,80,0.15);color:#ff8080;border:1px solid rgba(255,80,80,0.3);padding:2px 10px;border-radius:20px;font-weight:700">🔴 = Gargalo</span>
+              </div>
+              <div style="display:flex;gap:6px;align-items:center;font-size:10px;color:#a8b8d0">
+                <span>Formato: <strong style="color:#00d4ff">HH:MM:SS</strong></span>
+                <span style="color:rgba(255,255,255,0.2)">|</span>
+                <span>Estações: <strong style="color:#d0dff0">12 atividades</strong></span>
+              </div>
+            </div>
+            <div style="height:260px"><canvas id="chart-machine"></canvas></div>
+          </div>
+        </div>
+
+        <!-- ── ROW 3b: Modelos + Tendência ─────────────────── -->
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;margin-bottom:20px;align-items:start">
+          <!-- Modelos -->
+          <div class="chart-card" style="margin:0">
+            <div class="chart-header">
+              <div class="chart-title">Modelos / Produtos</div>
+            </div>
+            <div style="height:260px"><canvas id="chart-model"></canvas></div>
+          </div>
+          <!-- Tendência -->
+          <div class="chart-card" style="margin:0">
+            <div class="chart-header" style="display:flex;align-items:center;justify-content:space-between;padding-bottom:6px">
+              <div>
+                <div class="chart-title" style="font-size:13px;font-weight:800;color:#ffffff">📈 Tendência — Tempo Médio por Dia</div>
+                <div style="font-size:10px;color:#a8b8d0;margin-top:2px">Média diária de changeovers concluídos</div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-ghost btn-sm" id="btn-trend-7"
+                  style="font-size:10px;padding:4px 10px;background:rgba(0,212,255,0.2);border-color:rgba(0,212,255,0.5)"
+                  onclick="setTrendPeriod(7)">7 dias</button>
+                <button class="btn btn-ghost btn-sm" id="btn-trend-30"
+                  style="font-size:10px;padding:4px 10px"
+                  onclick="setTrendPeriod(30)">30 dias</button>
+              </div>
+            </div>
+            <div id="trend-delta" style="padding:4px 0 6px;font-size:12px;color:#a8b8d0"></div>
+            <div style="height:220px"><canvas id="chart-trend"></canvas></div>
+          </div>
+        </div>
+
+
+
+        <!-- ── ROW 4b: Sessões Ativas Agora ────────────────── -->
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="card-title" style="margin:0">⚡ Changeovers em Andamento</div>
+            <span style="font-size:11px;color:var(--muted)">Atualiza automaticamente</span>
+          </div>
+          <div id="active-sessions-panel" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
+            <div style="color:var(--muted);font-size:12px;padding:12px">Carregando...</div>
+          </div>
+        </div>
+
+        <!-- ── ROW 5: Últimos Changeoveres ─────────────────── -->
+        <div class="card">
+          <div class="card-title">Últimos Changeoveres</div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>ID</th><th>Linha</th><th>Técnico</th><th>Início</th><th>Fim</th><th>Duração</th><th>Limite</th><th>Status</th><th>Observações</th></tr></thead>
+              <tbody id="recent-tbody"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Carregando...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="sec-rooms" class="section">
+        <div id="rooms-grid" class="rooms-grid">
+          <div class="empty-state"><div class="empty-icon">&#x231B;</div><div class="empty-text">Carregando...</div></div>
+        </div>
+      </section>
+
+      <section id="sec-records" class="section">
+        <!-- Filtros avançados estilo planilha -->
+        <div class="records-filter-bar">
+          <div class="filter-group">
+            <label class="filter-label">📅 Data Início</label>
+            <input type="date" id="filter-date-from" class="field-input filter-date" onchange="loadRecords()">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">📅 Data Fim</label>
+            <input type="date" id="filter-date-to" class="field-input filter-date" onchange="loadRecords()">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">🏭 Linha</label>
+            <select id="filter-rec-room" class="field-input filter-sel" onchange="loadRecords()">
+              <option value="">Todas</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">👷 Técnico</label>
+            <select id="filter-rec-tech" class="field-input filter-sel" onchange="loadRecords()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">🕐 Turno</label>
+            <select id="filter-shift" class="field-input filter-sel" onchange="loadRecords()">
+              <option value="">Todos</option>
+              <option>1º Turno</option>
+              <option>2º Turno</option>
+              <option>3º Turno</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">📦 Produto</label>
+            <select id="filter-rec-product" class="field-input filter-sel" onchange="loadRecords()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">🔄 Tipo</label>
+            <select id="filter-rec-type" class="field-input filter-sel" onchange="loadRecords()">
+              <option value="">Todos</option>
+              <option>Setup Inicial</option>
+              <option>Troca de Produto</option>
+              <option>Manutenção Preventiva</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">✅ Status</label>
+            <select id="filter-rec-status" class="field-input filter-sel" onchange="loadRecords()">
+              <option value="">Todos</option>
+              <option value="completed">Concluído</option>
+              <option value="in_progress">Em andamento</option>
+            </select>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-ghost btn-sm" onclick="loadRecords()">&#x21BB; Atualizar</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearRecordFilters()">✕ Limpar</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportExcel()">📊 Excel</button>
+          </div>
+        </div>
+        <div class="card" style="margin-top:0">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div class="card-title" style="margin:0">Registros</div>
+            <div id="records-count" style="font-size:12px;color:var(--muted)"></div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr>
+                <th>Matrícula</th><th>Técnico</th><th>Data</th>
+                <th style="color:#00d4ff">Atividade</th>
+                <th>Início</th><th>Fim</th>
+                <th style="color:#00d4ff">Duração ▶</th>
+                <th>Linha</th><th>Turno</th><th>Produto</th><th>Tipo</th>
+                <th>Status</th><th>Ações</th>
+              </tr></thead>
+              <tbody id="records-tbody">
+                <tr><td colspan="14" style="text-align:center;color:var(--muted);padding:24px">Use os filtros acima.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+<!-- Tabela Performance por Estação removida -->
+      </section>
+
+      <!-- ── MATRIZ CO (estilo planilha Excel) ────────────── -->
+      <section id="sec-matriz" class="section">
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+            <div class="card-title" style="margin:0">📋 Matriz de Changeover — Estilo Planilha</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <div style="display:flex;gap:6px;align-items:center">
+                <label style="font-size:11px;color:var(--muted)">Data:</label>
+                <input type="date" id="mz-date-from" class="field-input filter-date" style="width:130px" onchange="loadMatriz()">
+                <span style="color:var(--muted);font-size:11px">→</span>
+                <input type="date" id="mz-date-to" class="field-input filter-date" style="width:130px" onchange="loadMatriz()">
+              </div>
+              <select id="mz-room" class="field-input filter-sel" style="width:160px" onchange="loadMatriz()">
+                <option value="">Todas as linhas</option>
+              </select>
+              <button class="btn btn-ghost btn-sm" onclick="loadMatriz()">&#x21BB; Atualizar</button>
+              <button class="btn btn-ghost btn-sm" onclick="exportMatrizExcel()">&#x1F4CA; Excel</button>
+            </div>
+          </div>
+
+          <!-- Legenda das fases -->
+          <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px">
+              <div style="width:14px;height:14px;background:rgba(0,100,200,0.6);border-radius:3px"></div>
+              <span style="color:#a8c0e8">SMT Line Preparation</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px">
+              <div style="width:14px;height:14px;background:rgba(140,80,180,0.6);border-radius:3px"></div>
+              <span style="color:#c8a0e8">Adjustment</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px">
+              <div style="width:14px;height:14px;background:rgba(200,80,60,0.6);border-radius:3px"></div>
+              <span style="color:#e8b0a0">Process Validation</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px">
+              <div style="width:14px;height:14px;background:rgba(180,60,60,0.6);border-radius:3px"></div>
+              <span style="color:#e8a8a8">Change Over Result</span>
+            </div>
+          </div>
+
+          <div class="table-wrap" style="overflow-x:auto">
+            <table id="mz-table" style="border-collapse:collapse;width:100%;min-width:1100px;font-size:12px">
+              <thead>
+                <!-- Linha 1: grupos de colunas -->
+                <tr>
+                  <th colspan="4" style="background:#1a2035;border:1px solid #2a3a5a;color:#a0b0d0;text-align:center;padding:6px 8px;font-size:11px"></th>
+                  <th colspan="3" style="background:rgba(0,80,180,0.5);border:1px solid #2a4a8a;color:#a8c8ff;text-align:center;padding:6px 8px;font-size:11px;font-weight:700;letter-spacing:0.5px">SMT LINE PREPARATION</th>
+                  <th colspan="3" style="background:rgba(100,60,160,0.5);border:1px solid #6a3a9a;color:#c8a8ff;text-align:center;padding:6px 8px;font-size:11px;font-weight:700;letter-spacing:0.5px">Adjustment</th>
+                  <th colspan="3" style="background:rgba(180,60,40,0.5);border:1px solid #9a3a2a;color:#ffb8a8;text-align:center;padding:6px 8px;font-size:11px;font-weight:700;letter-spacing:0.5px">PROCESS VALIDATION AND RELEASE</th>
+                  <th colspan="3" style="background:rgba(160,40,40,0.5);border:1px solid #8a2a2a;color:#ffaaa0;text-align:center;padding:6px 8px;font-size:11px;font-weight:700;letter-spacing:0.5px">CHANGE OVER RESULT</th>
+                </tr>
+                <!-- Linha 2: colunas individuais -->
+                <tr>
+                  <th style="background:#0d1525;border:1px solid #1e2e4a;color:#d0dff0;padding:6px 8px;white-space:nowrap">Data</th>
+                  <th style="background:#0d1525;border:1px solid #1e2e4a;color:#d0dff0;padding:6px 8px;white-space:nowrap">Linha</th>
+                  <th style="background:#0d1525;border:1px solid #1e2e4a;color:#d0dff0;padding:6px 8px;white-space:nowrap">Customer</th>
+                  <th style="background:#0d1525;border:1px solid #1e2e4a;color:#d0dff0;padding:6px 8px;white-space:nowrap">Model</th>
+                  <!-- SMT PREP -->
+                  <th style="background:rgba(0,60,140,0.3);border:1px solid #1a3a7a;color:#90b8ff;padding:6px 8px;white-space:nowrap">Setup Start</th>
+                  <th style="background:rgba(0,60,140,0.3);border:1px solid #1a3a7a;color:#90b8ff;padding:6px 8px;white-space:nowrap">Setup End</th>
+                  <th style="background:rgba(0,60,140,0.3);border:1px solid #1a3a7a;color:#90b8ff;padding:6px 8px;white-space:nowrap;font-weight:700">Setup Total</th>
+                  <!-- ADJUSTMENT -->
+                  <th style="background:rgba(80,40,120,0.3);border:1px solid #5a2a8a;color:#c090ff;padding:6px 8px;white-space:nowrap">Adj. Start</th>
+                  <th style="background:rgba(80,40,120,0.3);border:1px solid #5a2a8a;color:#c090ff;padding:6px 8px;white-space:nowrap">Adj. End</th>
+                  <th style="background:rgba(80,40,120,0.3);border:1px solid #5a2a8a;color:#c090ff;padding:6px 8px;white-space:nowrap;font-weight:700">Adj. Total</th>
+                  <!-- VALIDATION -->
+                  <th style="background:rgba(140,40,20,0.3);border:1px solid #7a2a1a;color:#ff9080;padding:6px 8px;white-space:nowrap">Val. Start</th>
+                  <th style="background:rgba(140,40,20,0.3);border:1px solid #7a2a1a;color:#ff9080;padding:6px 8px;white-space:nowrap">Val. End</th>
+                  <th style="background:rgba(140,40,20,0.3);border:1px solid #7a2a1a;color:#ff9080;padding:6px 8px;white-space:nowrap;font-weight:700">Val. Total</th>
+                  <!-- RESULT -->
+                  <th style="background:rgba(120,20,20,0.3);border:1px solid #6a1a1a;color:#ff8880;padding:6px 8px;white-space:nowrap;font-weight:700">CO Total</th>
+                  <th style="background:rgba(120,20,20,0.3);border:1px solid #6a1a1a;color:#ff8880;padding:6px 8px;white-space:nowrap">Target</th>
+                  <th style="background:rgba(120,20,20,0.3);border:1px solid #6a1a1a;color:#ff8880;padding:6px 8px;white-space:nowrap;font-weight:700">Gain/Loss</th>
+                </tr>
+              </thead>
+              <tbody id="mz-tbody">
+                <tr><td colspan="16" style="text-align:center;color:var(--muted);padding:40px;background:#0d1525">Selecione o período e clique em Atualizar.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="mz-summary" style="margin-top:12px;display:none">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+              <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:8px;padding:12px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Total CO</div>
+                <div style="font-family:monospace;font-size:18px;font-weight:700;color:var(--accent)" id="mz-total-co">—</div>
+              </div>
+              <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:12px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);margin-bottom:4px">On Time</div>
+                <div style="font-family:monospace;font-size:18px;font-weight:700;color:#22c55e" id="mz-on-time">—</div>
+              </div>
+              <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:12px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Delay</div>
+                <div style="font-family:monospace;font-size:18px;font-weight:700;color:#ef4444" id="mz-delay">—</div>
+              </div>
+              <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:12px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Avg CO Total</div>
+                <div style="font-family:monospace;font-size:18px;font-weight:700;color:#c084fc" id="mz-avg-co">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="sec-alerts" class="section">
+        <div id="alerts-list">
+          <div class="empty-state"><div class="empty-icon">&#x231B;</div><div class="empty-text">Verificando...</div></div>
+        </div>
+      </section>
+
+
+      <!-- ── COMPARAÇÃO DE MODELOS ──────────────────────── -->
+      <section id="sec-compare" class="section">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-title">📊 Comparação de Changeover por Modelo</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
+            Selecione um modelo/produto para comparar os changeovers ao longo do tempo — todas as atividades, evolução e se houve melhora.
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+            <div style="flex:1;min-width:180px">
+              <div class="filter-label" style="margin-bottom:4px">📦 Modelo / Produto</div>
+              <select id="cmp-product" class="field-input" onchange="loadCompare()">
+                <option value="">Selecione um modelo...</option>
+              </select>
+            </div>
+            <div style="flex:1;min-width:160px">
+              <div class="filter-label" style="margin-bottom:4px">🏭 Linha (opcional)</div>
+              <select id="cmp-room" class="field-input" onchange="loadCompare()">
+                <option value="">Todas as linhas</option>
+              </select>
+            </div>
+            <div style="flex:1;min-width:140px">
+              <div class="filter-label" style="margin-bottom:4px">📅 Período</div>
+              <select id="cmp-period" class="field-input" onchange="loadCompare()">
+                <option value="90">Últimos 90 dias</option>
+                <option value="60">Últimos 60 dias</option>
+                <option value="30" selected>Últimos 30 dias</option>
+                <option value="0">Tudo</option>
+              </select>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="loadCompare()">🔍 Comparar</button>
+          </div>
+        </div>
+
+        <!-- Resultado: sem seleção -->
+        <div id="cmp-empty" style="text-align:center;padding:60px 20px;color:var(--muted)">
+          <div style="font-size:40px;margin-bottom:12px">📦</div>
+          <div style="font-size:14px">Selecione um modelo acima para ver a comparação</div>
+        </div>
+
+        <!-- Resultado: com dados -->
+        <div id="cmp-results" style="display:none">
+
+          <!-- KPIs resumo -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px" id="cmp-kpis">
+          </div>
+
+          <!-- Gráfico evolução total -->
+          <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:16px;align-items:start">
+            <div class="chart-card" style="margin:0">
+              <div class="chart-header">
+                <div class="chart-title">📈 Evolução do Tempo Total por Changeover</div>
+              </div>
+              <div id="cmp-trend-delta" style="padding:4px 0 6px;font-size:12px"></div>
+              <div style="height:260px"><canvas id="chart-cmp-trend"></canvas></div>
+            </div>
+            <!-- Melhor vs Pior -->
+            <div class="chart-card" style="margin:0">
+              <div class="chart-header">
+                <div class="chart-title">🏆 Melhor vs Último</div>
+              </div>
+              <div id="cmp-best-info" style="padding:8px 0;font-size:12px;color:#d0dff0;line-height:2"></div>
+            </div>
+          </div>
+
+          <!-- Gráfico comparação por atividade: último vs melhor -->
+          <div class="chart-card" style="margin:0 0 16px 0">
+            <div class="chart-header">
+              <div class="chart-title">🔬 Comparação por Atividade — Último Changeover vs Melhor Histórico</div>
+            </div>
+            <div style="height:300px"><canvas id="chart-cmp-activity"></canvas></div>
+          </div>
+
+          <!-- Tabela detalhada -->
+          <div class="card">
+            <div class="card-title">📋 Histórico de Changeovers — <span id="cmp-model-name" style="color:var(--accent)"></span></div>
+            <div class="table-wrap">
+              <table class="data-table" style="font-size:12px">
+                <thead><tr>
+                  <th>#</th><th>Data</th><th>Técnico</th><th>Linha</th>
+                  <th>Duração Total</th><th>vs Melhor</th><th>vs Anterior</th><th>Resultado</th>
+                </tr></thead>
+                <tbody id="cmp-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ── CONFIGURAÇÕES ──────────────────────────────── -->
+      <!-- sec-settings removido -->
+
+    </main>
+  </div>
+</div>
+
+<!-- VIEW: OPERADOR -->
+<div id="view-op" class="view" style="flex-direction:column">
+  <header class="op-header">
+    <div class="op-logo">&#x2699;&#xFE0F; SMT</div>
+    <div class="op-room-badge" id="op-room-badge">&#x2014;</div>
+    <div id="op-line-name" style="font-size:13px;color:var(--muted);flex:1;margin-left:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;margin-left:8px">
+      <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Tempo Total</div>
+      <div style="font-family:monospace;font-size:15px;font-weight:700;color:var(--accent)" id="total-elapsed">00:00:00</div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="opLogout()" style="margin-left:10px">Sair</button>
+  </header>
+  <div class="op-progress"><div class="op-progress-bar" id="op-progress-bar" style="width:0%"></div></div>
+
+  <div class="op-body">
+
+    <div class="op-screen active" id="s-info">
+      <div class="screen-title">&#x1F4CB; Dados do Changeover</div>
+      <div class="screen-sub">Preencha as informa&ccedil;&otilde;es antes de iniciar.</div>
+      <div class="field">
+        <label class="field-label">Nome do T&eacute;cnico *</label>
+        <input id="inp-tech-name" class="field-input" type="text" placeholder="Ex: Jo&atilde;o Silva">
+      </div>
+      <!-- Produto/SKU: preenchido automaticamente pela room, só exibido -->
+      <div class="field" id="sku-field-wrap">
+        <label class="field-label">&#x1F4E6; Produto / SKU</label>
+        <input id="inp-product" class="field-input" type="text" placeholder="Preenchido pela lideran&ccedil;a"
+          style="font-weight:600;color:var(--accent)">
+        <div style="font-size:11px;color:var(--muted);margin-top:5px" id="sku-info-msg">
+          &#x26A0;&#xFE0F; Produto definido pela lideran&ccedil;a ao criar o ID.
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field">
+          <label class="field-label">Turno *</label>
+          <select id="inp-shift" class="field-input">
+            <option value="">Selecione</option>
+            <option>1º Turno</option>
+            <option>2º Turno</option>
+            <option>3º Turno</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Tipo *</label>
+          <select id="inp-co-type" class="field-input">
+            <option>Troca de Produto</option>
+            <option>Manuten&ccedil;&atilde;o Preventiva</option>
+            <option>Setup Inicial</option>
+            <option>Ajuste de Linha</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full btn-lg" onclick="startChangeover()">&#x25B6; Iniciar Changeover</button>
+    </div>
+
+    <div class="op-screen" id="s-machines">
+      <div class="screen-title">&#x1F3ED; Selecione a Atividade</div>
+      <div class="screen-sub" style="display:flex;justify-content:space-between;align-items:center">
+        <span>Toque na atividade que est&aacute; iniciando agora.</span>
+        <span style="font-family:monospace;font-size:13px;color:var(--accent)">
+          <span id="machines-done-count">0</span>/<span id="machines-total-count">11</span>
+        </span>
+      </div>
+      <div class="machines-grid" id="machines-grid"></div>
+      <button id="btn-finish-all" class="btn btn-secondary btn-full" style="display:none;margin-top:16px" onclick="finishAllChangeover()">&#x1F3C1; Finalizar Changeover</button>
+    </div>
+
+    <div class="op-screen" id="s-timer">
+      <div class="timer-machine" id="timer-machine-name">&#x2014;</div>
+      <div class="timer-display" id="timer-display">00:00:00</div>
+      <div class="field" style="margin-top:16px">
+        <label class="field-label" style="display:flex;justify-content:space-between">
+          Observa&ccedil;&atilde;o <span id="inp-obs-count" style="color:var(--muted)">0/400</span>
+        </label>
+        <textarea id="inp-obs" class="field-input" rows="4" maxlength="400"
+          placeholder="Anota&ccedil;&otilde;es, dificuldades, anomalias..." oninput="updateObsCount()" style="resize:vertical"></textarea>
+      </div>
+      <button class="btn btn-primary btn-full btn-lg" onclick="finishMachine()" style="margin-top:12px">&#x2705; Concluir Atividade</button>
+      <button class="btn btn-ghost btn-full" onclick="backToMachines()" style="margin-top:10px">&#x2190; Voltar &agrave; lista (sem concluir)</button>
+    </div>
+
+    <div class="op-screen" id="s-report">
+      <div class="screen-title" style="color:var(--success)">&#x2705; Changeover Conclu&iacute;do!</div>
+      <div class="screen-sub">Parab&eacute;ns! Abaixo o resumo.</div>
+      <div id="rep-overtime" class="overtime-alert" style="display:none"></div>
+      <div class="report-grid">
+        <div class="report-item">
+          <div class="report-item-label">Dura&ccedil;&atilde;o Total</div>
+          <div class="report-item-val text-accent" id="rep-duration">&#x2014;</div>
+        </div>
+        <div class="report-item">
+          <div class="report-item-label">Atividades</div>
+          <div class="report-item-val" id="rep-machines">&#x2014;</div>
+        </div>
+        <div class="report-item">
+          <div class="report-item-label">T&eacute;cnico</div>
+          <div class="report-item-val" id="rep-tech">&#x2014;</div>
+        </div>
+        <div class="report-item">
+          <div class="report-item-label">Linha</div>
+          <div class="report-item-val" id="rep-line">&#x2014;</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div class="report-item" style="margin:0">
+          <div class="report-item-label">&#x1F4E6; Produto / SKU</div>
+          <div class="report-item-val" id="rep-product" style="color:var(--accent);font-size:14px">&#x2014;</div>
+        </div>
+        <div class="report-item" style="margin:0">
+          <div class="report-item-label">Data/Hora</div>
+          <div class="report-item-val" id="rep-date" style="font-size:13px">&#x2014;</div>
+        </div>
+      </div>
+
+      <!-- 3 Cards de Fase -->
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">&#x23F1; Fases do Changeover</div>
+      <div id="phase-cards-wrapper" style="display:grid;gap:10px;margin-bottom:16px">
+        <div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">Carregando fases...</div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;padding:16px">
+        <div class="card-title">Detalhes por Atividade</div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Atividade</th><th>Dura&ccedil;&atilde;o</th><th>Observa&ccedil;&atilde;o</th></tr></thead>
+            <tbody id="rep-machines-table"></tbody>
+          </table>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <button class="btn btn-primary btn-full" onclick="generatePDF()">&#x1F4C4; PDF</button>
+        <button class="btn btn-ghost btn-full" onclick="shareWhatsApp()">&#x1F4AC; WhatsApp</button>
+      </div>
+      <div class="btn btn-ghost btn-full" style="margin-top:12px;display:none;padding:0" id="before-after-wrapper">
+        <div class="card" style="margin:0;border-color:rgba(0,212,255,0.2)">
+          <div class="card-title" style="font-size:13px">&#x1F4CA; Compara&ccedil;&atilde;o Before / After</div>
+          <div id="before-after-content" style="font-size:12px;color:#d0dff0;padding:4px 0">Carregando...</div>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-full" style="margin-top:12px" onclick="newChangeover()">&#x1F504; Novo Changeover</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: Nova Linha -->
+<div class="modal-overlay" id="modal-new-room">
+  <div class="modal">
+    <div class="modal-title">&#x1F6AA; Nova Linha SMT</div>
+    <div style="background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);border-radius:12px;padding:16px;margin-bottom:20px;text-align:center">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">ID para Operadores</div>
+      <div id="new-room-id-display" style="font-family:'JetBrains Mono',monospace;font-size:40px;font-weight:700;color:var(--accent);letter-spacing:12px;text-shadow:0 0 20px rgba(0,212,255,0.4)">XXXX</div>
+      <button class="btn btn-ghost btn-sm" onclick="regenerateId()" style="margin-top:10px">&#x1F504; Gerar Novo</button>
+    </div>
+
+    <!-- Identificação da Liderança -->
+    <div style="background:rgba(251,146,60,0.06);border:1px solid rgba(251,146,60,0.2);border-radius:10px;padding:14px;margin-bottom:16px">
+      <div style="font-size:11px;color:#fed7aa;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">&#x1F451; Identificação da Liderança</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field" style="margin:0">
+          <label class="field-label">Nome da Líder *</label>
+          <input id="nr-leader-name" class="field-input" type="text" placeholder="Ex: Ana Souza">
+        </div>
+        <div class="field" style="margin:0">
+          <label class="field-label">Matrícula (6 dígitos) *</label>
+          <input id="nr-leader-matricula" class="field-input" type="text" placeholder="000000" maxlength="6" pattern="[0-9]{6}" inputmode="numeric">
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Nome da Linha *</label>
+      <select id="nr-name" class="field-input">
+        <option value="">Selecione a linha...</option>
+        <option>ML01</option><option>ML02</option><option>ML03</option><option>ML04</option>
+        <option>ML05</option><option>ML06</option><option>ML07</option>
+        <option>BE01</option><option>BE02</option><option>BE03</option><option>BE04</option>
+        <option>BE05</option><option>BE06</option><option>BE07</option><option>BE08</option>
+        <option>PTH1</option><option>PTH2</option><option>PTH3</option><option>PTH4</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field-label">&#x1F4E6; SKU / Modelo do Produto *</label>
+      <input id="nr-sku" class="field-input" type="text" placeholder="Ex: FRUITDROP, MACAN 2C0, B450M..."
+        style="font-weight:600;letter-spacing:0.5px;text-transform:uppercase"
+        oninput="this.value=this.value.toUpperCase()">
+      <div style="font-size:11px;color:var(--muted);margin-top:5px">
+        &#x2139;&#xFE0F; O operador verá este modelo automaticamente ao entrar no changeover.
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field" style="margin:0">
+        <label class="field-label">Turno</label>
+        <select id="nr-shift" class="field-input">
+          <option value="">Todos</option>
+          <option>1º Turno</option>
+          <option>2º Turno</option>
+          <option>3º Turno</option>
+        </select>
+      </div>
+
+    </div>
+    <div class="field">
+      <label class="field-label">Tempo Limite do Changeover</label>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+        <input id="nr-limit" class="field-input" type="number" value="300" min="30" max="1440" placeholder="Ex: 300">
+        <div style="display:flex;gap:6px">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="setLimit(60)">1h</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="setLimit(120)">2h</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="setLimit(180)">3h</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="setLimit(240)">4h</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="setLimit(300)">5h</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px" id="limit-preview">
+        ⏱ Padr&atilde;o: 300 min = 5 horas — ajuste conforme necessidade da linha
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-full" onclick="closeModal('modal-new-room')">Cancelar</button>
+      <button id="btn-create-room" class="btn btn-primary btn-full" onclick="createRoom()">Criar Linha</button>
+    </div>
+  </div>
+</div>
+
+<!-- modal-resume-session removido -->
+
+<!-- MODAL: Lead Time Detalhado -->
+<div class="modal-overlay" id="modal-leadtime-detail">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-title">⏱ Lead Time do Changeover</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
+      Lead Time = Hora Final − Hora Inicial de cada changeover concluído.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px" id="lt-kpis">
+      <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:11px;color:#e9d5ff;margin-bottom:4px">Médio</div>
+        <div style="font-family:monospace;font-size:20px;font-weight:700;color:#c084fc" id="lt-avg">—</div>
+      </div>
+      <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:11px;color:#a8d8a8;margin-bottom:4px">Melhor</div>
+        <div style="font-family:monospace;font-size:20px;font-weight:700;color:#22c55e" id="lt-best">—</div>
+      </div>
+      <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:11px;color:#fca5a5;margin-bottom:4px">Pior</div>
+        <div style="font-family:monospace;font-size:20px;font-weight:700;color:#ef4444" id="lt-worst">—</div>
+      </div>
+    </div>
+    <div class="table-wrap" style="max-height:340px;overflow-y:auto">
+      <table class="data-table" style="font-size:12px">
+        <thead><tr><th>Data</th><th>Linha</th><th>Produto</th><th>Setup</th><th>Ajuste</th><th>Valida&ccedil;&atilde;o</th><th>Lead Time</th><th>Target</th><th>Status</th></tr></thead>
+        <tbody id="lt-tbody"><tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">Carregando...</td></tr></tbody>
+      </table>
+    </div>
+    <div class="modal-footer" style="margin-top:16px">
+      <button class="btn btn-ghost btn-full" onclick="closeModal('modal-leadtime-detail')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  PLANETA TERRA 3D — Three.js r128                           ║
+     ║  Renderização WebGL profissional com atmosfera, nuvens e    ║
+     ║  linhas de longitude/latitude animadas                      ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+  <!-- Scripts da aplicação -->
+  <script src="globe.js"></script>
+  <script src="app-full.js"></script>
+</body>
+</html>
