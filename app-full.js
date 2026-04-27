@@ -2984,12 +2984,6 @@ function renderMachineGrid() {
   setText('machines-done-count',  done);
   setText('machines-total-count', total);
 
-  // Mostra modal de conclusão quando TODAS as atividades estiverem feitas e nenhuma rodando
-  const hasRunning = machineIdx >= 0 && machineClocks[machineIdx]?.startedAt;
-  if (done === total && total > 0 && !hasRunning) {
-    showAllDoneModal();
-  }
-
   // Cores especiais por tipo de atividade
   const phaseColor = name => {
     if (name === ADJUSTMENT_ACTIVITY)  return 'rgba(251,146,60,0.15)';
@@ -3210,8 +3204,14 @@ async function finishMachine() {
   saveCurrentState();
   renderMachineGrid();
   showOpScreen('s-machines');
-  updateProgress(5 + Math.round((machines.filter(m=>m.done).length / machines.length) * 90));
+  const doneNow = machines.filter(m => m.done).length;
+  updateProgress(5 + Math.round((doneNow / machines.length) * 90));
   showToast(`✅ ${machineName} concluída: ${fmtMs(elapsed)}`, 'success');
+
+  // Se todas as atividades foram concluídas → abre modal de finalização
+  if (doneNow === machines.length && machines.length > 0) {
+    setTimeout(showAllDoneModal, 400); // pequeno delay para o toast aparecer primeiro
+  }
 }
 
 /* -------- Modal: todas concluídas ------------------------- */

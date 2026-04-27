@@ -799,22 +799,6 @@
       <div class="machines-grid" id="machines-grid"></div>
     </div>
 
-    <!-- Modal: todas atividades concluídas -->
-    <div id="modal-all-done" style="display:none;position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;padding:20px">
-      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px)" onclick="closeAllDoneModal()"></div>
-      <div style="position:relative;background:#0f2027;border:1px solid rgba(0,212,255,0.25);border-radius:20px;padding:28px 24px;max-width:340px;width:100%;box-shadow:0 0 40px rgba(0,212,255,0.15);text-align:center;animation:modalPop .25s cubic-bezier(.34,1.56,.64,1)">
-        <div style="font-size:48px;margin-bottom:12px">🏁</div>
-        <div style="font-size:17px;font-weight:700;color:#fff;margin-bottom:6px">Todas as atividades concluídas!</div>
-        <div style="font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:24px">Deseja finalizar o changeover agora ou iniciar outra atividade?</div>
-        <button onclick="finishAllChangeover()" style="width:100%;padding:14px;background:linear-gradient(135deg,#00d4ff,#00b4d8);color:#000;font-weight:700;font-size:15px;border:none;border-radius:12px;cursor:pointer;margin-bottom:10px">
-          🏁 Finalizar Changeover
-        </button>
-        <button onclick="closeAllDoneModal()" style="width:100%;padding:12px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.75);font-weight:600;font-size:14px;border:1px solid rgba(255,255,255,0.12);border-radius:12px;cursor:pointer">
-          ↩ Iniciar outra atividade
-        </button>
-      </div>
-    </div>
-
     <div class="op-screen" id="s-timer">
       <div class="timer-machine" id="timer-machine-name">&#x2014;</div>
       <div class="timer-display" id="timer-display">00:00:00</div>
@@ -1017,5 +1001,21 @@
   <!-- Scripts da aplicação -->
   <script src="globe.js"></script>
   <script src="app-full.js"></script>
+
+  <!-- Modal todas atividades concluídas — fora de qualquer container para position:fixed funcionar corretamente -->
+  <div id="modal-all-done" style="display:none;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;padding:20px">
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(5px)" onclick="closeAllDoneModal()"></div>
+    <div style="position:relative;background:#0f2027;border:1px solid rgba(0,212,255,0.3);border-radius:20px;padding:28px 24px;max-width:320px;width:100%;box-shadow:0 0 50px rgba(0,212,255,0.2);text-align:center">
+      <div style="font-size:52px;margin-bottom:10px">🏁</div>
+      <div style="font-size:17px;font-weight:700;color:#fff;margin-bottom:8px">Todas as atividades concluídas!</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:24px">Deseja finalizar o changeover ou iniciar outra atividade?</div>
+      <button onclick="finishAllChangeover()" style="width:100%;padding:14px;background:linear-gradient(135deg,#00d4ff,#00b4d8);color:#000;font-weight:700;font-size:15px;border:none;border-radius:12px;cursor:pointer;margin-bottom:10px;letter-spacing:.3px">
+        🏁&nbsp; Finalizar Changeover
+      </button>
+      <button onclick="closeAllDoneModal()" style="width:100%;padding:12px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);font-weight:600;font-size:14px;border:1px solid rgba(255,255,255,0.1);border-radius:12px;cursor:pointer">
+        ↩&nbsp; Iniciar outra atividade
+      </button>
+    </div>
+  </div>
 </body>
 </html>
