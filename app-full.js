@@ -1367,11 +1367,31 @@ async function leaderDeleteSession(sessionId, techName, chId) {
 function renderRooms() {
   const el = document.getElementById('rooms-grid');
   if (!el) return;
-  if (!adminRooms.length) {
-    el.innerHTML=`<div class="empty-state"><div class="empty-icon">🚪</div><div class="empty-text">Nenhuma linha criada.</div></div>`;
+
+  // Aplica filtros de data e status
+  const fromVal  = document.getElementById('filter-rooms-from')?.value || '';
+  const toVal    = document.getElementById('filter-rooms-to')?.value   || '';
+  const statusV  = document.getElementById('filter-rooms-status')?.value || '';
+  const fromTs   = fromVal ? new Date(fromVal + 'T00:00:00').getTime() : 0;
+  const toTs     = toVal   ? new Date(toVal   + 'T23:59:59').getTime() : Infinity;
+
+  const filtered = adminRooms.filter(r => {
+    const created = r.created_at ? new Date(r.created_at).getTime() : 0;
+    if (fromVal && created < fromTs) return false;
+    if (toVal   && created > toTs)   return false;
+    if (statusV === 'active'   && !r.is_active) return false;
+    if (statusV === 'inactive' &&  r.is_active) return false;
+    return true;
+  });
+
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🚪</div><div class="empty-text">${adminRooms.length ? 'Nenhuma linha encontrada com esses filtros.' : 'Nenhuma linha criada.'}</div></div>`;
     return;
   }
-  el.innerHTML = adminRooms.map(r => `
+
+  const fmtDate = iso => iso ? new Date(iso).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+
+  el.innerHTML = filtered.map(r => `
     <div class="room-card ${r.is_active?'':'inactive'}">
       <div class="room-code-badge">${r.room_code}</div>
       <div class="room-name">${r.name}</div>
@@ -1380,6 +1400,9 @@ function renderRooms() {
         ${r.line  ? `<span>📍 ${r.line}</span>`  : ''}
         ${r.shift ? `<span>🕐 ${r.shift}</span>` : ''}
         <span>⏱ Limite: <strong>${r.alert_limit_minutes||300} min</strong></span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:5px">
+        📅 Criado em: <span style="color:var(--muted2);font-weight:600">${fmtDate(r.created_at)}</span>
       </div>
       <div style="margin-bottom:12px">
         ${r.is_active ? '<span class="badge badge-green">● Ativa</span>' : '<span class="badge badge-red">● Inativa</span>'}
@@ -1390,6 +1413,12 @@ function renderRooms() {
         <button class="btn btn-danger btn-sm" onclick="confirmDeleteRoom('${r.id}','${r.name}')">🗑</button>
       </div>
     </div>`).join('');
+}
+
+function clearRoomsFilter() {
+  ['filter-rooms-from','filter-rooms-to'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  const st = document.getElementById('filter-rooms-status'); if(st) st.value='';
+  renderRooms();
 }
 
 async function toggleRoom(id, active) {

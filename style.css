@@ -1324,6 +1324,12 @@ textarea.field-input { resize:vertical; min-height:88px; line-height:1.5; }
   .page-content { padding-bottom:76px !important; }
   /* Hide recent sessions table no mobile (muito larga) */
   #sec-dashboard > .card:last-of-type { display:none; }
+  /* Sidebar acima da bottom nav quando aberta */
+  .sidebar.open { z-index:400 !important; }
+  .sidebar-overlay.open { z-index:350 !important; }
+  /* Footer do sidebar fixo no bottom — sempre visível */
+  .sidebar-nav { max-height:calc(100vh - 200px); overflow-y:auto; }
+  .sidebar-footer { position:sticky; bottom:0; background:var(--surface); z-index:1; border-top:1px solid var(--border); }
 }
 @media (max-width:420px) {
   .mbn-item { font-size:8px; padding:5px 1px; }

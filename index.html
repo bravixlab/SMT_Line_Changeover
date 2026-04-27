@@ -369,6 +369,29 @@
       </section>
 
       <section id="sec-rooms" class="section">
+        <!-- Filtro de data das linhas -->
+        <div class="records-filter-bar" style="margin-bottom:14px">
+          <div class="filter-group">
+            <label class="filter-label">📅 Criado a partir de</label>
+            <input type="date" id="filter-rooms-from" class="field-input filter-date" onchange="renderRooms()">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">📅 Criado até</label>
+            <input type="date" id="filter-rooms-to" class="field-input filter-date" onchange="renderRooms()">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">✅ Status</label>
+            <select id="filter-rooms-status" class="field-input filter-sel" onchange="renderRooms()">
+              <option value="">Todas</option>
+              <option value="active">Ativas</option>
+              <option value="inactive">Inativas</option>
+            </select>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-ghost btn-sm" onclick="clearRoomsFilter()">✕ Limpar</button>
+            <button class="btn btn-ghost btn-sm" onclick="loadAdminRooms()">&#x21BB; Atualizar</button>
+          </div>
+        </div>
         <div id="rooms-grid" class="rooms-grid">
           <div class="empty-state"><div class="empty-icon">&#x231B;</div><div class="empty-text">Carregando...</div></div>
         </div>
