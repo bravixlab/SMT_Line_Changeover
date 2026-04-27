@@ -428,9 +428,8 @@ async function loadAdminStats() {
       return (Date.now() - new Date(s.start_time).getTime()) > limMs;
     });
 
-    // Changeoveres hoje = rooms únicas com sessão hoje (1 por ID/linha)
-    const todayUniqueRooms = new Set(todaySess.map(s => s.room_id).filter(Boolean));
-    setText('stat-today', todayUniqueRooms.size || '0');
+    // Changeoveres hoje = total de sessões iniciadas hoje
+    setText('stat-today', todaySess.length || '0');
     setText('stat-active', active.length || '0');
     const avgMs = completed.length
       ? completed.reduce((a,s) => a + s.total_duration_ms, 0) / completed.length : 0;
@@ -568,8 +567,8 @@ async function loadMachineData(sessionIds) {
   const byMachine = {};
   STATION_ORDER.forEach(n => { byMachine[n] = []; });
   machineTimes.forEach(mt => {
-    if (byMachine[mt.machine_name] !== undefined)
-      byMachine[mt.machine_name].push(mt.duration_ms || 0);
+    if (byMachine[mt.machine_name] !== undefined && mt.duration_ms)
+      byMachine[mt.machine_name].push(mt.duration_ms);
   });
 
   // avgMin por estação
@@ -615,11 +614,14 @@ async function loadMachineData(sessionIds) {
 function loadChartMain(sessions) {
   const byRoom = {};
   sessions.forEach(s => {
-    if (!s.total_duration_ms) return;
+    const ms = s.total_duration_ms ||
+      (s.status === 'in_progress' && s.start_time
+        ? Date.now() - new Date(s.start_time).getTime() : 0);
+    if (!ms) return;
     const name = s.rooms?.name || 'Desconhecida';
     const lim  = s.rooms?.alert_limit_minutes || 300;
     if (!byRoom[name]) byRoom[name] = { ms:[], lim };
-    byRoom[name].ms.push(s.total_duration_ms);
+    byRoom[name].ms.push(ms);
   });
 
   const labels   = Object.keys(byRoom).slice(0,10);
