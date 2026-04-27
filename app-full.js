@@ -3208,10 +3208,8 @@ async function finishMachine() {
   updateProgress(5 + Math.round((doneNow / machines.length) * 90));
   showToast(`✅ ${machineName} concluída: ${fmtMs(elapsed)}`, 'success');
 
-  // Se todas as atividades foram concluídas → abre modal de finalização
-  if (doneNow === machines.length && machines.length > 0) {
-    setTimeout(showAllDoneModal, 400); // pequeno delay para o toast aparecer primeiro
-  }
+  // Após concluir qualquer atividade → pergunta se quer finalizar ou continuar
+  setTimeout(showAllDoneModal, 400);
 }
 
 /* -------- Modal: todas concluídas ------------------------- */
