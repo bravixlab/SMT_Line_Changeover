@@ -200,6 +200,30 @@
 
       <section id="sec-dashboard" class="section active">
 
+        <!-- ── Filtro de data do dashboard ── -->
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;
+          background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);
+          border-radius:12px;padding:10px 16px">
+          <span style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);flex-shrink:0">📅 Período</span>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1">
+            <input type="date" id="dash-date-from" class="field-input filter-date"
+              style="width:140px;height:32px;font-size:12px"
+              onchange="loadAdminStats()" title="Data início">
+            <span style="color:var(--muted);font-size:13px">→</span>
+            <input type="date" id="dash-date-to" class="field-input filter-date"
+              style="width:140px;height:32px;font-size:12px"
+              onchange="loadAdminStats()" title="Data fim">
+            <button class="btn btn-ghost btn-sm" style="height:32px;font-size:11px;padding:0 12px"
+              onclick="clearDashDateFilter()">✕ Limpar</button>
+            <button class="btn btn-ghost btn-sm" style="height:32px;font-size:11px;padding:0 12px;color:var(--accent);border-color:rgba(0,212,255,0.3)"
+              onclick="setDashDateToday()">Hoje</button>
+            <button class="btn btn-ghost btn-sm" style="height:32px;font-size:11px;padding:0 12px"
+              onclick="setDashDate7d()">7 dias</button>
+            <button class="btn btn-ghost btn-sm" style="height:32px;font-size:11px;padding:0 12px"
+              onclick="setDashDate30d()">30 dias</button>
+          </div>
+        </div>
+
         <!-- ── ROW 1: KPIs básicos ─────────────────────────── -->
         <div class="dash-row-label">Visão Geral</div>
         <div class="stats-grid">

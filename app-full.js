@@ -313,6 +313,40 @@ function applyGlobalFilters() {
   else loadAdminStats();
 }
 
+function clearDashDateFilter() {
+  const f = document.getElementById('dash-date-from');
+  const t = document.getElementById('dash-date-to');
+  if (f) f.value = '';
+  if (t) t.value = '';
+  loadAdminStats();
+}
+function setDashDateToday() {
+  const d = new Date().toISOString().slice(0,10);
+  const f = document.getElementById('dash-date-from');
+  const t = document.getElementById('dash-date-to');
+  if (f) f.value = d;
+  if (t) t.value = d;
+  loadAdminStats();
+}
+function setDashDate7d() {
+  const to   = new Date(); to.setHours(23,59,59);
+  const from = new Date(); from.setDate(from.getDate() - 6); from.setHours(0,0,0,0);
+  const f = document.getElementById('dash-date-from');
+  const t = document.getElementById('dash-date-to');
+  if (f) f.value = from.toISOString().slice(0,10);
+  if (t) t.value = to.toISOString().slice(0,10);
+  loadAdminStats();
+}
+function setDashDate30d() {
+  const to   = new Date(); to.setHours(23,59,59);
+  const from = new Date(); from.setDate(from.getDate() - 29); from.setHours(0,0,0,0);
+  const f = document.getElementById('dash-date-from');
+  const t = document.getElementById('dash-date-to');
+  if (f) f.value = from.toISOString().slice(0,10);
+  if (t) t.value = to.toISOString().slice(0,10);
+  loadAdminStats();
+}
+
 // Popula o filtro de modelos na topbar com base nas sessões carregadas
 function populateModelFilter(sessions) {
   const sel = document.getElementById('filter-model-global');
@@ -363,15 +397,19 @@ function setText(id, val) {
    LOAD STATS — hub principal
 ============================================================ */
 async function loadAdminStats() {
-  const roomFilter = document.getElementById('filter-room-global')?.value || '';
+  const roomFilter  = document.getElementById('filter-room-global')?.value  || '';
+  const modelFilter = document.getElementById('filter-model-global')?.value || '';
+  const dateFrom    = document.getElementById('dash-date-from')?.value || '';
+  const dateTo      = document.getElementById('dash-date-to')?.value   || '';
   const today = new Date(); today.setHours(0,0,0,0);
 
   try {
     let q = db.from('changeover_sessions')
       .select('*,rooms(name,room_code,alert_limit_minutes)');
-    if (roomFilter) q = q.eq('room_id', roomFilter);
-    const modelFilter = document.getElementById('filter-model-global')?.value || '';
+    if (roomFilter)  q = q.eq('room_id', roomFilter);
     if (modelFilter) q = q.eq('product', modelFilter);
+    if (dateFrom)    q = q.gte('created_at', dateFrom + 'T00:00:00');
+    if (dateTo)      q = q.lte('created_at', dateTo   + 'T23:59:59');
     const { data: sessions, error } = await q;
     if (error) { console.warn('[stats]', error); return; }
 
