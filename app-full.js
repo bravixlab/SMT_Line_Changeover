@@ -437,8 +437,8 @@ async function loadAdminStats() {
     setText('stat-avg', avgMs > 0 ? fmtHHMMSS(avgMs) : '—');
     setText('stat-alerts', alertSess.length || '0');
 
-    // Tempo total de machine_times
-    await loadTotalMachineTime(completed.map(s => s.id));
+    // Tempo total de machine_times — conta TODAS as atividades concluídas (sessões completas ou em andamento)
+    await loadTotalMachineTime(_allSessions.map(s => s.id));
 
     // Conformidade
     const conformPct = completed.length
@@ -465,8 +465,22 @@ async function loadAdminStats() {
     loadTechTable(completed);
     loadMachineData(completed.map(s => s.id));
     updateStatSubLabels();
-    // Atualiza painel de sessões ativas no dashboard
-    renderActiveSessions(active);
+
+    // Busca machine_times das sessões ativas para saber qual atividade está rodando
+    let activeMtMap = {};
+    if (active.length) {
+      try {
+        const { data: activeMts } = await db.from('machine_times')
+          .select('session_id,machine_name,start_time,end_time,completed')
+          .in('session_id', active.map(s => s.id))
+          .order('created_at', {ascending: false});
+        (activeMts || []).forEach(mt => {
+          if (!activeMtMap[mt.session_id]) activeMtMap[mt.session_id] = [];
+          activeMtMap[mt.session_id].push(mt);
+        });
+      } catch(e) {}
+    }
+    renderActiveSessions(active, activeMtMap);
 
   } catch(e) { console.warn('[loadAdminStats]', e); }
 }
@@ -1329,7 +1343,7 @@ async function loadAdminRooms() {
 /* ============================================================
    PAINEL SESSÕES ATIVAS — Dashboard (só IDs em andamento)
 ============================================================ */
-function renderActiveSessions(activeSessions) {
+function renderActiveSessions(activeSessions, mtMap = {}) {
   const el = document.getElementById('active-sessions-panel');
   if (!el) return;
   if (!activeSessions.length) {
@@ -1339,28 +1353,54 @@ function renderActiveSessions(activeSessions) {
     </div>`;
     return;
   }
+
   el.innerHTML = activeSessions.map(s => {
     const startMs = s.start_time ? new Date(s.start_time).getTime() : Date.now();
     const elapsed = Date.now() - startMs;
     const limMs   = (s.rooms?.alert_limit_minutes||300)*60000;
     const over    = elapsed > limMs;
     const pct     = Math.min(Math.round(elapsed / limMs * 100), 100);
-    const overClass = over ? 'over-limit' : '';
+
+    const mts         = mtMap[s.id] || [];
+    const runningMts  = mts.filter(mt => !mt.end_time && !mt.completed);
+    const doneMts     = mts.filter(mt =>  mt.end_time ||  mt.completed);
+    const waitingEnd  = mts.length > 0 && runningMts.length === 0; // todas concluídas mas sessão aberta
+
+    // Estado real da sessão
+    let badgeHtml, cardClass, currentActivity;
+    if (waitingEnd) {
+      badgeHtml      = `<span class="slc-badge-active" style="background:rgba(251,146,60,0.15);color:#fb923c;border-color:rgba(251,146,60,0.3);animation:none">⏳ AGUARDANDO</span>`;
+      cardClass      = 'session-live-card';
+      currentActivity = `<div style="font-size:11px;color:#fb923c;margin-top:6px;font-weight:600">
+        ✔ ${doneMts.length} atividade(s) concluída(s) — aguardando técnico finalizar
+      </div>`;
+    } else if (over) {
+      badgeHtml      = `<span class="slc-badge-active">⚠ ALERTA</span>`;
+      cardClass      = 'session-live-card over-limit';
+      currentActivity = runningMts.length
+        ? `<div style="font-size:11px;color:#ef4444;margin-top:6px">▶ ${runningMts.map(m=>m.machine_name).join(', ')}</div>`
+        : '';
+    } else {
+      badgeHtml      = `<span class="slc-badge-active">● ATIVO</span>`;
+      cardClass      = 'session-live-card';
+      currentActivity = runningMts.length
+        ? `<div style="font-size:11px;color:var(--accent);margin-top:6px">▶ ${runningMts.map(m=>m.machine_name).join(', ')}</div>`
+        : '';
+    }
+
     return `
-      <div class="session-live-card ${overClass}">
-        <span class="slc-badge-active">${over ? '⚠ ALERTA' : '● ATIVO'}</span>
+      <div class="${cardClass}">
+        ${badgeHtml}
         <div class="slc-line-code">${s.rooms?.room_code||'—'}</div>
         <div class="slc-tech">👤 ${s.tech_name||'—'}</div>
-        <div class="slc-meta">
-          🏭 ${s.rooms?.name||'—'} &nbsp;·&nbsp; 🕐 ${s.shift||'—'} &nbsp;·&nbsp; 📦 ${s.product||'—'}
-        </div>
-        <div class="slc-timer" data-start="${startMs}">${fmtHHMMSS(elapsed)}</div>
+        <div class="slc-meta">🏭 ${s.rooms?.name||'—'} &nbsp;·&nbsp; 🕐 ${s.shift||'—'} &nbsp;·&nbsp; 📦 ${s.product||'—'}</div>
+        ${currentActivity}
+        <div class="slc-timer" data-start="${startMs}" style="${waitingEnd?'color:#fb923c;text-shadow:0 0 16px rgba(251,146,60,0.3)':''}">${fmtHHMMSS(elapsed)}</div>
         <div class="slc-limit">Limite: ${fmtHHMMSS(limMs)} &nbsp;|&nbsp; ${pct}% utilizado</div>
-        <div class="slc-progress"><div class="slc-progress-bar" style="width:${pct}%"></div></div>
+        <div class="slc-progress"><div class="slc-progress-bar" style="width:${pct}%;${waitingEnd?'background:linear-gradient(90deg,#fb923c,#f59e0b)':''}"></div></div>
       </div>`;
   }).join('');
 
-  // Live timers nos cards de sessão ativa
   clearInterval(window._sessionTimerInterval);
   window._sessionTimerInterval = setInterval(() => {
     document.querySelectorAll('.slc-timer[data-start]').forEach(el => {
