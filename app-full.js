@@ -408,8 +408,8 @@ async function loadAdminStats() {
       .select('*,rooms(name,room_code,alert_limit_minutes)');
     if (roomFilter)  q = q.eq('room_id', roomFilter);
     if (modelFilter) q = q.eq('product', modelFilter);
-    if (dateFrom)    q = q.gte('created_at', dateFrom + 'T00:00:00');
-    if (dateTo)      q = q.lte('created_at', dateTo   + 'T23:59:59');
+    if (dateFrom) q = q.gte('created_at', new Date(dateFrom + 'T00:00:00').toISOString());
+    if (dateTo)   q = q.lte('created_at', new Date(dateTo   + 'T23:59:59').toISOString());
     const { data: sessions, error } = await q;
     if (error) { console.warn('[stats]', error); return; }
 
