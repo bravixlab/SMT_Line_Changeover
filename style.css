@@ -59,6 +59,7 @@ body::before {
   animation:gridDrift 44s linear infinite;
 }
 @keyframes gridDrift { 0%{background-position:0 0} 100%{background-position:48px 48px} }
+@keyframes modalPop { from{transform:scale(.85);opacity:0} to{transform:scale(1);opacity:1} }
 
 .stars {
   position:fixed; inset:0; z-index:0; pointer-events:none;

@@ -2887,6 +2887,7 @@ async function startChangeover() {
 
   if (btnStart) { btnStart.disabled = false; btnStart.textContent = 'Iniciar Changeover'; }
 
+  closeAllDoneModal();
   renderMachineGrid();
   showOpScreen('s-machines');
   updateProgress(5);
@@ -2983,8 +2984,11 @@ function renderMachineGrid() {
   setText('machines-done-count',  done);
   setText('machines-total-count', total);
 
-  const btnFin = document.getElementById('btn-finish-all');
-  if (btnFin) btnFin.style.display = done > 0 ? 'block' : 'none';
+  // Mostra modal de conclusão quando TODAS as atividades estiverem feitas e nenhuma rodando
+  const hasRunning = machineIdx >= 0 && machineClocks[machineIdx]?.startedAt;
+  if (done === total && total > 0 && !hasRunning) {
+    showAllDoneModal();
+  }
 
   // Cores especiais por tipo de atividade
   const phaseColor = name => {
@@ -3210,8 +3214,23 @@ async function finishMachine() {
   showToast(`✅ ${machineName} concluída: ${fmtMs(elapsed)}`, 'success');
 }
 
+/* -------- Modal: todas concluídas ------------------------- */
+function showAllDoneModal() {
+  const m = document.getElementById('modal-all-done');
+  if (!m || m.dataset.shown === '1') return;
+  m.dataset.shown = '1';
+  m.style.display = 'flex';
+}
+function closeAllDoneModal() {
+  const m = document.getElementById('modal-all-done');
+  if (!m) return;
+  m.style.display = 'none';
+  m.dataset.shown = '0';
+}
+
 /* -------- Finalizar Changeover ---------------------------- */
 async function finishAllChangeover() {
+  closeAllDoneModal();
   clearInterval(window._gridRefresh);
   clearInterval(window._machineTimerInterval);
   clearInterval(totalTimer); totalTimer = null;
