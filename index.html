@@ -208,11 +208,11 @@
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1">
             <input type="date" id="dash-date-from" class="field-input filter-date"
               style="width:140px;height:32px;font-size:12px"
-              onchange="loadAdminStats()" title="Data início">
+              onchange="_reloadDashboard()" title="Data início">
             <span style="color:var(--muted);font-size:13px">→</span>
             <input type="date" id="dash-date-to" class="field-input filter-date"
               style="width:140px;height:32px;font-size:12px"
-              onchange="loadAdminStats()" title="Data fim">
+              onchange="_reloadDashboard()" title="Data fim">
             <button class="btn btn-ghost btn-sm" style="height:32px;font-size:11px;padding:0 12px"
               onclick="clearDashDateFilter()">✕ Limpar</button>
             <button class="btn btn-ghost btn-sm" style="height:32px;font-size:11px;padding:0 12px;color:var(--accent);border-color:rgba(0,212,255,0.3)"

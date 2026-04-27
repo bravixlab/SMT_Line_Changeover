@@ -313,38 +313,38 @@ function applyGlobalFilters() {
   else loadAdminStats();
 }
 
+function _reloadDashboard() { loadAdminStats(); loadRecentSessions(); }
+
 function clearDashDateFilter() {
   const f = document.getElementById('dash-date-from');
   const t = document.getElementById('dash-date-to');
   if (f) f.value = '';
   if (t) t.value = '';
-  loadAdminStats();
+  _reloadDashboard();
 }
 function setDashDateToday() {
-  const d = new Date().toISOString().slice(0,10);
+  const d = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD no fuso local
   const f = document.getElementById('dash-date-from');
   const t = document.getElementById('dash-date-to');
   if (f) f.value = d;
   if (t) t.value = d;
-  loadAdminStats();
+  _reloadDashboard();
 }
 function setDashDate7d() {
-  const to   = new Date(); to.setHours(23,59,59);
-  const from = new Date(); from.setDate(from.getDate() - 6); from.setHours(0,0,0,0);
+  const from = new Date(); from.setDate(from.getDate() - 6);
   const f = document.getElementById('dash-date-from');
   const t = document.getElementById('dash-date-to');
-  if (f) f.value = from.toISOString().slice(0,10);
-  if (t) t.value = to.toISOString().slice(0,10);
-  loadAdminStats();
+  if (f) f.value = from.toLocaleDateString('en-CA');
+  if (t) t.value = new Date().toLocaleDateString('en-CA');
+  _reloadDashboard();
 }
 function setDashDate30d() {
-  const to   = new Date(); to.setHours(23,59,59);
-  const from = new Date(); from.setDate(from.getDate() - 29); from.setHours(0,0,0,0);
+  const from = new Date(); from.setDate(from.getDate() - 29);
   const f = document.getElementById('dash-date-from');
   const t = document.getElementById('dash-date-to');
-  if (f) f.value = from.toISOString().slice(0,10);
-  if (t) t.value = to.toISOString().slice(0,10);
-  loadAdminStats();
+  if (f) f.value = from.toLocaleDateString('en-CA');
+  if (t) t.value = new Date().toLocaleDateString('en-CA');
+  _reloadDashboard();
 }
 
 // Popula o filtro de modelos na topbar com base nas sessões carregadas
@@ -948,9 +948,20 @@ function buildMatrixTable(byMachine, avgMin) {
 ============================================================ */
 async function loadRecentSessions() {
   try {
-    const { data, error } = await db.from('changeover_sessions')
+    const dateFrom = document.getElementById('dash-date-from')?.value || '';
+    const dateTo   = document.getElementById('dash-date-to')?.value   || '';
+    const roomFilter  = document.getElementById('filter-room-global')?.value  || '';
+    const modelFilter = document.getElementById('filter-model-global')?.value || '';
+
+    let q = db.from('changeover_sessions')
       .select('*,rooms(name,room_code,alert_limit_minutes)')
-      .order('created_at',{ascending:false}).limit(10);
+      .order('created_at',{ascending:false}).limit(50);
+    if (roomFilter)  q = q.eq('room_id', roomFilter);
+    if (modelFilter) q = q.eq('product', modelFilter);
+    if (dateFrom) q = q.gte('created_at', new Date(dateFrom + 'T00:00:00').toISOString());
+    if (dateTo)   q = q.lte('created_at', new Date(dateTo   + 'T23:59:59').toISOString());
+
+    const { data, error } = await q;
 
     const tbody = document.getElementById('recent-tbody');
     if (!tbody) return;
